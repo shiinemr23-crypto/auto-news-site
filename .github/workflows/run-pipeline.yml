@@ -2,7 +2,6 @@ name: Run news pipeline
 
 on:
   schedule:
-    # Runs every hour. Cron is in UTC.
     - cron: "* * * * *"
   workflow_dispatch: {}   # lets you trigger it manually from the Actions tab
 
