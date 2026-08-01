@@ -22,8 +22,14 @@ model = genai.GenerativeModel("gemini-3.1-flash-lite")
 SECONDS_BETWEEN_CALLS = 5
 
 REWRITE_PROMPT = """You are a neutral news summarizer.
-Rewrite the following article summary in your own words, in 2-3 sentences.
+Rewrite the following article summary in your own words, in 5-6 sentences.
 Do not copy phrases directly. Stay factual and neutral in tone.
+
+You are only given a short summary, not the full article. Do not invent
+specific facts, numbers, quotes, or details that aren't in the summary
+below. Instead add value by: explaining relevant background context,
+clarifying why this matters, or noting what typically happens next in
+situations like this — general, defensible context, not invented specifics.
 
 Naturally attribute the information within the text itself, e.g.
 "According to {source}, ..." — work this in early, not as a label.
