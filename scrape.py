@@ -6,15 +6,19 @@ a clean list of dicts, ready for the rewrite step (Phase 2).
 
 import feedparser
 
-# Start with a couple of well-known, reliable RSS feeds.
-# Add more once this works end to end.
+# A mix of general and topic feeds — more sources means more chance
+# of catching genuinely new articles each hourly run.
 RSS_FEEDS = [
     "http://feeds.bbci.co.uk/news/rss.xml",
+    "http://feeds.bbci.co.uk/news/world/rss.xml",
+    "http://feeds.bbci.co.uk/news/technology/rss.xml",
     "https://feeds.a.dj.com/rss/RSSWorldNews.xml",
+    "https://www.theguardian.com/world/rss",
+    "https://www.aljazeera.com/xml/rss/all.xml",
 ]
 
 
-def fetch_articles(max_per_feed=5):
+def fetch_articles(max_per_feed=10):
     """Fetch recent articles from each feed in RSS_FEEDS.
 
     Returns a list of dicts: title, summary, link, published, source.
