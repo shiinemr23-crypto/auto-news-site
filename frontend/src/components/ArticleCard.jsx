@@ -1,48 +1,9 @@
-import { Link } from "react-router-dom";
-
-function timeAgo(date) {
-  if (!date) return "";
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (seconds < 60) return "just now";
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
-
-// First sentence or two of the rewritten text, for the card preview.
-// Full text (including the trailing "Source: ..." line) shows on detail page.
-function previewText(rewritten, maxLength = 160) {
-  if (!rewritten) return "";
-  if (rewritten.length <= maxLength) return rewritten;
-  return rewritten.slice(0, maxLength).trim() + "...";
-}
+import { Link } from 'react-router-dom'
+import { previewText, timeAgo } from '../lib'
 
 export default function ArticleCard({ article }) {
-  return (
-    <Link
-      to={`/article/${article.id}`}
-      style={{
-        display: "block",
-        background: "#fff",
-        border: "1px solid #e5e5e5",
-        borderRadius: "12px",
-        padding: "14px",
-        textDecoration: "none",
-        color: "inherit",
-      }}
-    >
-      <p style={{ fontSize: "15px", fontWeight: 500, margin: "0 0 6px", lineHeight: 1.4 }}>
-        {article.title}
-      </p>
-      <p style={{ fontSize: "13px", color: "#666", margin: "0 0 6px", lineHeight: 1.5 }}>
-        {previewText(article.rewritten)}
-      </p>
-      <span style={{ fontSize: "12px", color: "#999" }}>
-        {timeAgo(article.createdAt)}
-      </span>
-    </Link>
-  );
+  return <Link to={`/article/${article.id}`} className="theme-card group flex h-full flex-col overflow-hidden rounded-2xl border border-moss/10 bg-white shadow-card transition duration-300 hover:-translate-y-1 hover:border-moss/25 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-coral focus:ring-offset-2">
+    <div className="relative aspect-[16/9] overflow-hidden bg-moss/10">{article.image ? <img src={article.image} alt="" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" onError={(event) => { event.currentTarget.style.display = 'none'; event.currentTarget.nextElementSibling.style.display = 'flex' }} /> : null}<div className={`absolute inset-0 items-center justify-center bg-gradient-to-br from-moss to-[#183d30] ${article.image ? 'hidden' : 'flex'}`}><span className="font-display text-5xl italic text-paper/75">B</span><span className="absolute bottom-4 left-4 right-4 text-xs font-semibold uppercase tracking-[.17em] text-paper/75">Briefly / {article.source}</span></div></div>
+    <div className="flex flex-1 flex-col p-5"><div className="mb-3 flex items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[.12em]"><span className="truncate text-moss">{article.source || 'News'}</span><span className="shrink-0 text-ink/40">{timeAgo(article.created_at)}</span></div><h2 className="font-display text-[1.5rem] leading-[1.12] text-ink transition group-hover:text-moss">{article.title}</h2><p className="mt-3 line-clamp-3 text-[.97rem] leading-7 text-ink/65">{previewText(article.rewritten)}</p><span className="mt-auto pt-5 text-sm font-bold text-coral">Read briefing <span aria-hidden>→</span></span></div>
+  </Link>
 }

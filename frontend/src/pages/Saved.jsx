@@ -1,9 +1,2 @@
-export default function Saved() {
-  return (
-    <div style={{ padding: "16px", maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
-      <p style={{ fontSize: "15px", color: "#999", padding: "60px 0" }}>
-        Saved articles will appear here once accounts are added.
-      </p>
-    </div>
-  );
-}
+import { Link } from 'react-router-dom'
+export default function Saved() { return <main className="mx-auto flex min-h-[55vh] max-w-3xl items-center px-5 py-12 sm:px-6"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-coral">Coming later</p><h1 className="mt-3 font-display text-5xl leading-none text-ink sm:text-6xl">Save the stories<br/><em className="text-moss">you want to return to.</em></h1><p className="mt-7 max-w-lg text-lg leading-8 text-ink/65">Saved briefs will arrive when accounts are introduced. For now, every story remains available from the latest feed.</p><Link to="/" className="mt-8 inline-flex rounded-full bg-moss px-5 py-3 text-sm font-bold text-paper transition hover:bg-[#193f30]">Explore latest briefs</Link></div></main> }

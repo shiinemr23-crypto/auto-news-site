@@ -1,0 +1,4 @@
+import { Link } from 'react-router-dom'
+export default function Footer() {
+  return <footer className="mt-16 border-t border-moss/10 bg-mist/50 pb-24 pt-10 md:pb-10"><div className="mx-auto max-w-6xl px-5 sm:px-6"><div className="grid gap-7 sm:grid-cols-2"><div><p className="font-display text-2xl text-ink">Briefly</p><p className="mt-2 max-w-sm text-sm leading-6 text-ink/65">An educational project, not a news outlet. A calmer way to scan the day’s headlines.</p></div><div className="sm:text-right"><Link to="/about" className="text-sm font-semibold text-moss underline decoration-moss/30 underline-offset-4 hover:decoration-moss">How Briefly works</Link><p className="mt-3 text-xs font-semibold uppercase tracking-[.13em] text-ink/45">Sources: BBC · WSJ · Guardian · Al Jazeera · NPR</p></div></div><p className="mt-9 text-xs text-ink/45">© {new Date().getFullYear()} Briefly. Educational use only.</p></div></footer>
+}
