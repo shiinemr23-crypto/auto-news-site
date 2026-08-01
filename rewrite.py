@@ -7,13 +7,19 @@ territory rather than reproducing source articles.
 """
 
 import os
+import time
 import google.generativeai as genai
+from google.api_core.exceptions import ResourceExhausted
 from dotenv import load_dotenv
 
 load_dotenv()
 
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 model = genai.GenerativeModel("gemini-3.1-flash-lite")
+
+# Free tier allows 15 requests/minute for this model.
+# Spacing calls out avoids hitting the limit in the first place.
+SECONDS_BETWEEN_CALLS = 5
 
 REWRITE_PROMPT = """You are a neutral news summarizer.
 Rewrite the following article summary in your own words, in 2-3 sentences.
@@ -24,19 +30,28 @@ Original summary: {summary}
 """
 
 
-def rewrite_article(article):
+def rewrite_article(article, max_retries=3):
     """Takes an article dict (from scrape.py) and returns it with
-    an added 'rewritten' field.
+    an added 'rewritten' field. Retries with backoff if the free-tier
+    rate limit is hit.
     """
     prompt = REWRITE_PROMPT.format(
         title=article["title"],
         summary=article["summary"],
     )
 
-    response = model.generate_content(prompt)
+    for attempt in range(max_retries):
+        try:
+            response = model.generate_content(prompt)
+            article["rewritten"] = response.text.strip()
+            time.sleep(SECONDS_BETWEEN_CALLS)  # pace the next call
+            return article
+        except ResourceExhausted:
+            wait = 60  # free tier resets per minute; wait it out
+            print(f"Rate limit hit, waiting {wait}s (attempt {attempt + 1}/{max_retries})...")
+            time.sleep(wait)
 
-    article["rewritten"] = response.text.strip()
-    return article
+    raise RuntimeError(f"Failed to rewrite '{article['title']}' after {max_retries} retries")
 
 
 if __name__ == "__main__":
