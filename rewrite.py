@@ -25,6 +25,11 @@ REWRITE_PROMPT = """You are a neutral news summarizer.
 Rewrite the following article summary in your own words, in 2-3 sentences.
 Do not copy phrases directly. Stay factual and neutral in tone.
 
+Naturally attribute the information within the text itself, e.g.
+"According to {source}, ..." — work this in early, not as a label.
+End with a final short sentence in this exact format:
+"Source: {source} — {link}"
+
 Title: {title}
 Original summary: {summary}
 """
@@ -38,6 +43,8 @@ def rewrite_article(article, max_retries=3):
     prompt = REWRITE_PROMPT.format(
         title=article["title"],
         summary=article["summary"],
+        source=article["source"],
+        link=article["link"],
     )
 
     for attempt in range(max_retries):

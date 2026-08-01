@@ -66,13 +66,14 @@ def save_article(article):
 
 if __name__ == "__main__":
     # Quick manual test using one fake rewritten article.
+   
     test_article = {
-        "title": "Example headline",
-        "rewritten": "This is a placeholder rewritten summary.",
-        "link": "https://example.com/test-article",
-        "source": "Test Feed",
-        "published": "",
-    }
+    "title": "Example headline",
+    "rewritten": "This is a placeholder rewritten summary.",
+    "link": "https://example.com/test-article-2",  # changed
+    "source": "Test Feed",
+    "published": "",
+}
 
     saved = save_article(test_article)
     print("Saved new doc" if saved else "Already existed, skipped")
