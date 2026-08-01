@@ -93,11 +93,17 @@ def filter_recent(articles, max_age_minutes=90):
     ]
 
 
-def fetch_articles(max_per_feed=4, max_age_minutes=90):
+def fetch_articles(max_per_feed=4, max_age_minutes=240):
     """Convenience wrapper: fetch everything, then filter to recent.
     This is what main.py uses for normal hourly runs. For debugging
     or one-off backfills, call fetch_all_articles() and filter_recent()
     separately instead.
+
+    240 minutes (4 hours) rather than a tighter window because these
+    feeds don't all publish frequently enough for a 90-minute window
+    to reliably catch anything — link-based dedup in store.py already
+    prevents re-saving articles seen in a previous run, so a wider
+    window here is safe, not wasteful.
     """
     all_articles = fetch_all_articles(max_per_feed=max_per_feed)
     return filter_recent(all_articles, max_age_minutes=max_age_minutes)
