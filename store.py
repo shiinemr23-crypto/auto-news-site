@@ -5,6 +5,7 @@ document ID so re-running the pipeline won't create duplicates.
 """
 
 import os
+import json
 import hashlib
 from datetime import datetime, timezone
 
@@ -14,10 +15,24 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-_cred_path = os.environ["FIREBASE_SERVICE_ACCOUNT_PATH"]
+
+def _load_credentials():
+    """Loads Firebase credentials two ways:
+    - Locally: from a JSON file path (FIREBASE_SERVICE_ACCOUNT_PATH)
+    - In GitHub Actions: from the full JSON contents as a secret
+      (FIREBASE_SERVICE_ACCOUNT_JSON)
+    """
+    json_str = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
+    if json_str:
+        cred_dict = json.loads(json_str)
+        return credentials.Certificate(cred_dict)
+
+    cred_path = os.environ["FIREBASE_SERVICE_ACCOUNT_PATH"]
+    return credentials.Certificate(cred_path)
+
 
 if not firebase_admin._apps:
-    cred = credentials.Certificate(_cred_path)
+    cred = _load_credentials()
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
