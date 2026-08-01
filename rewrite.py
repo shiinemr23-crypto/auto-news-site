@@ -1,9 +1,12 @@
 """
 Phase 2 — AI rewrite.
-Takes a scraped article (title + summary) and asks Gemini to produce
-a short, original-wording summary. Keep outputs SHORT and clearly
-summary-style — this is what keeps the project in safe, educational
-territory rather than reproducing source articles.
+Takes a scraped article and asks Gemini to produce an original-wording
+summary. When the full source article text is available (see
+fetch_full_text.py), produces a longer, multi-paragraph summary
+genuinely grounded in that content. When only the short RSS blurb is
+available, falls back to a brief summary and explicitly avoids
+inventing specifics — this fallback path is what keeps the project
+safe even when full-text extraction fails for a given source.
 """
 
 import os
@@ -21,7 +24,29 @@ model = genai.GenerativeModel("gemini-3.1-flash-lite")
 # Spacing calls out avoids hitting the limit in the first place.
 SECONDS_BETWEEN_CALLS = 5
 
-REWRITE_PROMPT = """You are a neutral news summarizer.
+# Used when full article text was successfully extracted.
+# Genuinely longer and multi-paragraph, but still grounded in real
+# reported content rather than invented detail.
+FULL_TEXT_PROMPT = """You are a neutral news summarizer.
+Summarize the following article in your own words, in 3-4 short
+paragraphs. Do not copy sentences directly — rewrite everything in
+your own words. Stay factual and neutral in tone. Only include facts,
+figures, and claims that actually appear in the article text below —
+do not add outside information or speculation.
+
+Naturally attribute the information within the text itself, e.g.
+"According to {source}, ..." — work this in early, not as a label.
+End with a final short paragraph in this exact format:
+"Source: {source} — {link}"
+
+Title: {title}
+Article text: {full_text}
+"""
+
+# Used when only the short RSS blurb is available (full-text
+# extraction failed or wasn't attempted). Deliberately stays brief
+# and avoids inventing specifics not present in the blurb.
+SUMMARY_ONLY_PROMPT = """You are a neutral news summarizer.
 Rewrite the following article summary in your own words, in 5-6 sentences.
 Do not copy phrases directly. Stay factual and neutral in tone.
 
@@ -42,16 +67,29 @@ Original summary: {summary}
 
 
 def rewrite_article(article, max_retries=3):
-    """Takes an article dict (from scrape.py) and returns it with
-    an added 'rewritten' field. Retries with backoff if the free-tier
-    rate limit is hit.
+    """Takes an article dict (from scrape.py, optionally with a
+    'full_text' field added by fetch_full_text.py) and returns it
+    with an added 'rewritten' field. Retries with backoff if the
+    free-tier rate limit is hit.
     """
-    prompt = REWRITE_PROMPT.format(
-        title=article["title"],
-        summary=article["summary"],
-        source=article["source"],
-        link=article["link"],
-    )
+    full_text = article.get("full_text")
+
+    if full_text and len(full_text) > 200:
+        # Enough real content to work with — produce a longer summary.
+        prompt = FULL_TEXT_PROMPT.format(
+            title=article["title"],
+            full_text=full_text[:8000],  # cap to keep prompt size sane
+            source=article["source"],
+            link=article["link"],
+        )
+    else:
+        # No usable full text — stay brief and don't invent specifics.
+        prompt = SUMMARY_ONLY_PROMPT.format(
+            title=article["title"],
+            summary=article["summary"],
+            source=article["source"],
+            link=article["link"],
+        )
 
     for attempt in range(max_retries):
         try:

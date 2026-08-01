@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore'
 import { db } from '../firebase'
 import ArticleCard from '../components/ArticleCard'
+import FeaturedCard from '../components/FeaturedCard'
 import SkeletonCard from '../components/SkeletonCard'
 
 function TopNews({ loading, articles }) {
@@ -28,6 +29,7 @@ function TopNews({ loading, articles }) {
 
 export default function Home() {
   const [state, setState] = useState({ loading: true, articles: [], error: false })
+  const [featured, setFeatured] = useState({ loading: true, articles: [] })
   const [selectedSource, setSelectedSource] = useState('All')
 
   useEffect(() => {
@@ -35,6 +37,14 @@ export default function Home() {
     getDocs(query(collection(db, 'articles'), orderBy('created_at', 'desc'), limit(30)))
       .then((snapshot) => active && setState({ loading: false, articles: snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })), error: false }))
       .catch(() => active && setState({ loading: false, articles: [], error: true }))
+    return () => { active = false }
+  }, [])
+
+  useEffect(() => {
+    let active = true
+    getDocs(query(collection(db, 'featured_articles'), orderBy('created_at', 'desc'), limit(3)))
+      .then((snapshot) => active && setFeatured({ loading: false, articles: snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) }))
+      .catch(() => active && setFeatured({ loading: false, articles: [] }))
     return () => { active = false }
   }, [])
 
@@ -57,6 +67,20 @@ export default function Home() {
     </section>
     <section className="theme-filter border-b border-moss/10 bg-paper dark:border-white/10 dark:bg-[#121914]"><div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-2 gap-y-2 px-5 py-4 sm:px-6"><span className="mr-3 text-xs font-bold uppercase tracking-[.16em] text-ink/40 dark:text-paper/40">Filter by source</span>{sources.map((source) => <button key={source} type="button" onClick={() => setSelectedSource(source)} className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${selectedSource === source ? 'bg-moss text-paper' : 'text-ink/70 hover:bg-mist dark:text-paper/70 dark:hover:bg-white/10'}`}>{source}</button>)}</div></section>
     <main id="latest" className="theme-feed mx-auto max-w-6xl scroll-mt-5 px-5 py-11 dark:bg-[#121914] sm:px-6 sm:py-16">
+      {!featured.loading && featured.articles.length > 0 && <div className="mb-12">
+        <div className="mb-5 flex items-end justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[.18em] text-coral">Multiple outlets, one story</p>
+            <h2 className="mt-2 font-display text-4xl text-ink dark:text-paper">Featured</h2>
+          </div>
+          <Link to="/featured" className="hidden shrink-0 rounded-full bg-coral/10 px-4 py-2 text-xs font-bold uppercase tracking-[.1em] text-coral transition hover:bg-coral/20 sm:block">See all featured →</Link>
+        </div>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {featured.articles.map((article) => <FeaturedCard key={article.id} article={article}/>)}
+        </div>
+        <Link to="/featured" className="mt-5 block text-center text-sm font-bold text-coral sm:hidden">See all featured →</Link>
+      </div>}
+
       <div className="mb-8 flex items-end justify-between"><div><p className="text-xs font-bold uppercase tracking-[.18em] text-coral">{selectedSource === 'All' ? 'From the latest cycle' : `${selectedSource} reporting`}</p><h2 className="mt-2 font-display text-4xl text-ink dark:text-paper">{selectedSource === 'All' ? 'Today’s briefings' : `${selectedSource} briefings`}</h2></div><span className="hidden rounded-full bg-mist px-3 py-1.5 text-xs font-bold text-moss dark:bg-white/10 dark:text-[#a9d3ba] sm:block">New reporting, carefully condensed</span></div>
       <TopNews loading={state.loading} articles={topArticles}/>
       <div className="mt-7">{state.loading && <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }, (_, i) => <SkeletonCard key={i}/>)}</div>}{!state.loading && state.error && <div className="rounded-2xl border border-coral/20 bg-coral/5 p-8 text-center"><h2 className="font-display text-2xl text-ink dark:text-paper">Couldn’t load the feed</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-ink/60 dark:text-paper/60">Please check your connection and refresh to try again.</p></div>}{!state.loading && !state.error && visibleArticles.length === 0 && <div className="rounded-2xl border border-dashed border-moss/25 bg-white p-10 text-center dark:border-white/20 dark:bg-[#19221c]"><p className="font-display text-3xl text-ink dark:text-paper">No briefings from {selectedSource} yet.</p><p className="mx-auto mt-3 max-w-md text-sm leading-6 text-ink/60 dark:text-paper/60">Try another source or check back after the next scheduled update.</p></div>}{!state.loading && !state.error && visibleArticles.length > 0 && <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{visibleArticles.map((article) => <ArticleCard key={article.id} article={article}/>)}</div>}</div>

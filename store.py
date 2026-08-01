@@ -43,6 +43,15 @@ def _doc_id_for(link):
     return hashlib.sha256(link.encode("utf-8")).hexdigest()[:20]
 
 
+def already_saved(link):
+    """Cheap existence check by link, used before doing the expensive
+    full-text fetch + Gemini rewrite work in main.py — no point
+    fetching/rewriting an article we already have.
+    """
+    doc_id = _doc_id_for(link)
+    return db.collection("articles").document(doc_id).get().exists
+
+
 def save_article(article):
     """Saves one rewritten article dict to the 'articles' collection.
     Skips if it already exists (dedup by link).
