@@ -16,5 +16,5 @@ export function StoryCard({ story, featured = false }: { story: Story; featured?
   const title = feature ? story.headline : story.title;
   const href = feature ? `/featured/${story.slug ?? story.id}` : `/article/${story.id}`;
   const age = timeAgo(story.createdAt);
-  return <article className={`story-card ${featured ? "feature-card" : ""}`}><Link className="card-image" href={href}><StoryImage story={story} /></Link><div className="card-copy"><p className="eyebrow">{feature ? "Deep Dive" : story.source}{age && <span className="story-age"> · {age}</span>}</p><h3><Link href={href}>{title}</Link></h3></div></article>;
+  return <article className={`story-card ${featured ? "feature-card" : ""}`}><Link className="card-image" href={href}><StoryImage story={story} /></Link><div className="card-copy"><p className="eyebrow">{feature ? "Deep Dive" : <Link className="source-badge" href={`/sources#${story.source.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}>{story.source}</Link>}{age && <span className="story-age"> · {age}</span>}</p><h3><Link href={href}>{title}</Link></h3></div></article>;
 }

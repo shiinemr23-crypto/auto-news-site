@@ -1,0 +1,1 @@
+export default function Loading() { return <div className="page-wrap loading-page" aria-label="Loading content"><div className="skeleton skeleton-title" /><div className="skeleton skeleton-hero" /><div className="skeleton-grid">{Array.from({ length: 6 }, (_, index) => <div className="skeleton skeleton-card" key={index} />)}</div></div>; }
