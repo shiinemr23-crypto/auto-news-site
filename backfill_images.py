@@ -11,7 +11,7 @@ already-fixed documents.
 
 import time
 from store import db
-from image_fallback import search_image
+from image_fallback import search_image_with_fallback as search_image
 
 
 def backfill_collection(collection_name, title_field):
