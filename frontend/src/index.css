@@ -1,21 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-html { background: #f8f6f0; }
-body { margin: 0; min-width: 320px; background: #f8f6f0; color: #17201b; font-family: Inter, ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
-html.dark, html.dark body { background: #121914; color: #f8f6f0; }
-html.dark .theme-header,
-html.dark .theme-bottom,
-html.dark .theme-filter,
-html.dark .theme-feed { background-color: #121914 !important; }
-html.dark .theme-hero { background-color: #17251d !important; }
-html.dark .theme-card,
-html.dark .theme-top-news { background-color: #19221c !important; }
-html.dark .bg-white { background-color: #19221c; }
-html.dark .text-ink { color: #f8f6f0; }
-html.dark [class*="text-ink/"] { color: rgba(248, 246, 240, .7) !important; }
-html.dark [class*="border-moss/"] { border-color: rgba(255, 255, 255, .12); }
+html { background: #f7f5f0; }
+body { margin: 0; min-width: 320px; background: #f7f5f0; color: #141414; font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+html.dark, html.dark body { background: #111312; color: #f4f1e9; }
+html.dark .theme-header, html.dark .theme-bottom, html.dark .theme-filter, html.dark .theme-feed { background-color: #111312 !important; }
+html.dark .theme-card, html.dark .theme-top-news, html.dark .bg-white { background-color: #1b1e1c !important; }
+html.dark .text-ink { color: #f4f1e9; }
+html.dark [class*="text-ink/"] { color: rgba(244, 241, 233, .7) !important; }
+html.dark [class*="border-moss/"] { border-color: rgba(255, 255, 255, .13); }
 * { box-sizing: border-box; }
 a { -webkit-tap-highlight-color: transparent; }
-::selection { background: #b8d4c3; color: #17201b; }
+::selection { background: #d1e3dd; color: #141414; }

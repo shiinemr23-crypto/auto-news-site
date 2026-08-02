@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { timeAgo } from '../lib'
+import StoryImage from '../components/StoryImage'
 import NotFound from './NotFound'
 
 // Splits body into paragraphs, and pulls a trailing "(Source: ...)"
@@ -44,7 +45,7 @@ export default function FeaturedDetail() {
   const paragraphs = parseParagraphs(article.body)
   const sources = article.sources || []
 
-  return <main className="mx-auto max-w-3xl px-5 py-10 sm:px-6 sm:py-16">
+  return <main className="mx-auto max-w-4xl px-5 py-10 sm:px-7 sm:py-16">
     <Link to="/featured" className="inline-flex text-sm font-bold text-moss transition hover:text-coral dark:text-[#a9d3ba]">← Back to in-depth stories</Link>
     <div className="mt-9">
       <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-coral">
@@ -56,14 +57,15 @@ export default function FeaturedDetail() {
       <h1 className="mt-4 font-display text-4xl leading-[1.02] tracking-tight text-ink dark:text-paper sm:text-6xl">{article.headline}</h1>
     </div>
 
-    <article className="mt-10 font-display text-[1.45rem] leading-[1.72] text-ink/85 dark:text-paper/85 sm:text-[1.7rem]">
+    <StoryImage src={article.image} label="Featured story" className="mt-9 aspect-[16/8] w-full"/>
+    <article className="mx-auto mt-10 max-w-3xl font-display text-[1.45rem] leading-[1.72] text-ink/85 dark:text-paper/85 sm:text-[1.7rem]">
       {paragraphs.map((p, index) => <p key={index} className="mb-3">
         {p.text}
         {p.citation && <span className="mt-2 block font-sans text-sm font-semibold normal-case tracking-normal text-ink/40 dark:text-paper/40">Source: {p.citation}</span>}
       </p>)}
     </article>
 
-    <aside className="mt-11 rounded-r-2xl border-l-4 border-coral bg-coral/5 px-6 py-5 dark:bg-coral/10">
+    <aside className="mx-auto mt-11 max-w-3xl border-l-4 border-coral bg-coral/5 px-6 py-5 dark:bg-coral/10">
       <p className="text-xs font-bold uppercase tracking-[.16em] text-coral">Sources for this story</p>
       <ul className="mt-3 space-y-2">
         {sources.map((s, index) => <li key={index} className="text-sm leading-6 text-ink/70 dark:text-paper/70">

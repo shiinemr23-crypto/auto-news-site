@@ -4,9 +4,9 @@ export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
-      fontFamily: { display: ['"DM Serif Display"', 'Georgia', 'serif'], sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
-      colors: { ink: '#17201b', paper: '#f8f6f0', moss: '#245741', coral: '#e4654e', mist: '#e8eee9' },
-      boxShadow: { card: '0 10px 30px rgba(26, 39, 31, .08)' },
+      fontFamily: { display: ['"Playfair Display"', 'Georgia', 'serif'], sans: ['"DM Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+      colors: { ink: '#141414', paper: '#f7f5f0', moss: '#1d5b52', coral: '#e85d3f', mist: '#ebe8e0' },
+      boxShadow: { card: '0 12px 32px rgba(20, 20, 20, .08)' },
     },
   },
   plugins: [],
