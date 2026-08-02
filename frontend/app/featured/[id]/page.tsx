@@ -1,0 +1,8 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { excerpt, getFeature } from "@/lib/content";
+import { StoryImage } from "@/components/story-card";
+type Props = { params: Promise<{ id: string }> };
+export const dynamic = "force-dynamic";
+export async function generateMetadata({ params }: Props): Promise<Metadata> { const feature = await getFeature((await params).id); if (!feature) return {}; return { title: feature.headline, description: excerpt(feature.body), openGraph: { title: feature.headline, description: excerpt(feature.body), images: feature.image ? [feature.image] : [] } }; }
+export default async function FeaturePage({ params }: Props) { const feature = await getFeature((await params).id); if (!feature) notFound(); const paragraphs = feature.body.split(/\n\s*\n/).filter(Boolean); return <article className="reading-page page-wrap"><div className="reading-head"><p className="eyebrow">Featured briefing</p><h1>{feature.headline}</h1></div><div className="reading-image"><StoryImage story={feature} priority /></div><div className="prose feature-prose">{paragraphs.map((paragraph, index) => { const match = paragraph.match(/\n?\(Source: [^)]+\)\s*$/); const text = match ? paragraph.slice(0, match.index).trim() : paragraph; return <div key={index}><p>{text}</p>{match && <p className="inline-citation">{match[0].trim()}</p>}</div>; })}</div>{feature.sources.length > 0 && <section className="sources"><p className="eyebrow">Reporting consulted</p><h2>Sources</h2><ul>{feature.sources.map((source, index) => <li key={`${source.link}-${index}`}><a href={source.link} target="_blank" rel="noreferrer">{source.name} <span>↗</span></a></li>)}</ul></section>}</article>; }
