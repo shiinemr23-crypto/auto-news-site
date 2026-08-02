@@ -8,11 +8,26 @@ frontend will want to display them differently.
 """
 
 import hashlib
+import re
 from datetime import datetime, timezone
 
 # Reuses the same Firebase app initialization as store.py — importing
 # db from there avoids initializing firebase_admin twice.
 from store import db
+
+
+def _slugify(headline):
+    slug = re.sub(r"[^a-z0-9]+", "-", headline.lower()).strip("-")[:80]
+    return slug or "featured-story"
+
+
+def _unique_slug(headline):
+    base = _slugify(headline)
+    slug, suffix = base, 2
+    while list(db.collection("featured_articles").where("slug", "==", slug).limit(1).stream()):
+        slug = f"{base}-{suffix}"
+        suffix += 1
+    return slug
 
 
 def _doc_id_for(topic_label):
@@ -41,10 +56,12 @@ def save_feature_article(article):
 
     doc_ref.set({
         "headline": article["headline"],
+        "slug": _unique_slug(article["headline"]),
         "body": article["body"],
         "topic_label": article["topic_label"],
         "sources": article["sources"],  # list of {name, link}
         "image": article.get("image"),
+        "images": article.get("images", []),
         "created_at": datetime.now(timezone.utc),
     })
     return True

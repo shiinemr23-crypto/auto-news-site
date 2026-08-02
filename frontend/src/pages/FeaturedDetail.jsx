@@ -1,77 +1,19 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { doc, getDoc } from 'firebase/firestore'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { collection, doc, getDoc, getDocs, limit, query, where } from 'firebase/firestore'
 import { db } from '../firebase'
-import { timeAgo } from '../lib'
+import { featuredPath, timeAgo } from '../lib'
 import StoryImage from '../components/StoryImage'
 import NotFound from './NotFound'
 
-// Splits body into paragraphs, and pulls a trailing "(Source: ...)"
-// line off each paragraph so it can be styled distinctly from the
-// main prose rather than rendered as a plain sentence.
-function parseParagraphs(body = '') {
-  return body.split(/\n+/).filter(Boolean).map((raw) => {
-    const match = raw.match(/^(.*?)\s*\(Source:\s*(.*?)\)\s*$/s)
-    if (!match) return { text: raw.trim(), citation: null }
-    return { text: match[1].trim(), citation: match[2].trim() }
-  })
-}
+function parseParagraphs(body = '') { return body.split(/\n+/).map((line) => line.trim()).filter((line) => line && !/^\(?source:/i.test(line)) }
 
 export default function FeaturedDetail() {
-  const { id } = useParams()
-  const [state, setState] = useState({ loading: true, article: null, missing: false })
-
-  useEffect(() => {
-    let active = true
-    getDoc(doc(db, 'featured_articles', id))
-      .then((snapshot) => active && setState({
-        loading: false,
-        article: snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null,
-        missing: !snapshot.exists(),
-      }))
-      .catch(() => active && setState({ loading: false, article: null, missing: true }))
-    return () => { active = false }
-  }, [id])
-
-  if (state.loading) return <main className="mx-auto max-w-3xl px-5 py-14 sm:px-6">
-    <div className="h-4 w-28 animate-pulse rounded bg-moss/10"/>
-    <div className="mt-6 h-16 w-full animate-pulse rounded bg-moss/10"/>
-    <div className="mt-3 h-16 w-4/5 animate-pulse rounded bg-moss/10"/>
-    <div className="mt-10 h-72 animate-pulse rounded-2xl bg-moss/10"/>
-  </main>
+  const { id: slug } = useParams(); const navigate = useNavigate(); const [state, setState] = useState({ loading: true, article: null, missing: false })
+  useEffect(() => { let active = true; const legacyId = /^[a-f0-9]{20}$/i.test(slug); const request = legacyId ? getDoc(doc(db, 'featured_articles', slug)).then((snapshot) => snapshot.exists() ? [snapshot] : []) : getDocs(query(collection(db, 'featured_articles'), where('slug', '==', slug), limit(1))).then((snapshot) => snapshot.docs); request.then((docs) => active && setState({ loading: false, article: docs[0] ? { id: docs[0].id, ...docs[0].data() } : null, missing: !docs[0] })).catch(() => active && setState({ loading: false, article: null, missing: true })); return () => { active = false } }, [slug])
+  useEffect(() => { if (state.article && slug !== state.article.slug) navigate(featuredPath(state.article), { replace: true }) }, [navigate, slug, state.article])
+  if (state.loading) return <main className="mx-auto max-w-3xl px-5 py-14 sm:px-6"><div className="h-4 w-28 animate-pulse rounded bg-moss/10"/><div className="mt-6 h-16 w-full animate-pulse rounded bg-moss/10"/><div className="mt-3 h-16 w-4/5 animate-pulse rounded bg-moss/10"/><div className="mt-10 h-72 animate-pulse rounded-2xl bg-moss/10"/></main>
   if (state.missing) return <NotFound/>
-
-  const { article } = state
-  const paragraphs = parseParagraphs(article.body)
-  const sources = article.sources || []
-
-  return <main className="mx-auto max-w-4xl px-5 py-10 sm:px-7 sm:py-16">
-    <Link to="/featured" className="inline-flex text-sm font-bold text-moss transition hover:text-coral dark:text-[#a9d3ba]">← Back to in-depth stories</Link>
-    <div className="mt-9">
-      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-coral">
-        <span className="grid h-5 w-5 place-items-center rounded-full bg-coral/15 text-[.65rem]">★</span>
-        In depth
-        <span className="h-1 w-1 rounded-full bg-ink/30 dark:bg-paper/30"/>
-        <span className="normal-case tracking-normal text-ink/45 dark:text-paper/45">{timeAgo(article.created_at)}</span>
-      </div>
-      <h1 className="mt-4 font-display text-4xl leading-[1.02] tracking-tight text-ink dark:text-paper sm:text-6xl">{article.headline}</h1>
-    </div>
-
-    <StoryImage src={article.image} label="Featured story" className="mt-9 aspect-[16/8] w-full"/>
-    <article className="mx-auto mt-10 max-w-3xl font-display text-[1.45rem] leading-[1.72] text-ink/85 dark:text-paper/85 sm:text-[1.7rem]">
-      {paragraphs.map((p, index) => <p key={index} className="mb-3">
-        {p.text}
-        {p.citation && <span className="mt-2 block font-sans text-sm font-semibold normal-case tracking-normal text-ink/40 dark:text-paper/40">Source: {p.citation}</span>}
-      </p>)}
-    </article>
-
-    <aside className="mx-auto mt-11 max-w-3xl border-l-4 border-coral bg-coral/5 px-6 py-5 dark:bg-coral/10">
-      <p className="text-xs font-bold uppercase tracking-[.16em] text-coral">Sources for this story</p>
-      <ul className="mt-3 space-y-2">
-        {sources.map((s, index) => <li key={index} className="text-sm leading-6 text-ink/70 dark:text-paper/70">
-          {s.name} — <a className="font-bold text-moss underline decoration-moss/30 underline-offset-4 hover:decoration-moss dark:text-[#a9d3ba]" href={s.link} target="_blank" rel="noreferrer">Read the full story ↗</a>
-        </li>)}
-      </ul>
-    </aside>
-  </main>
+  const { article } = state; const paragraphs = parseParagraphs(article.body); const sources = article.sources || []; const images = article.images?.length ? article.images : [article.image]
+  return <main className="mx-auto max-w-4xl px-5 py-10 sm:px-7 sm:py-16"><Link to="/featured" className="inline-flex text-sm font-bold text-moss transition hover:text-coral">← Back to in-depth stories</Link><div className="mt-9"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-coral"><span className="grid h-5 w-5 place-items-center rounded-full bg-coral/15 text-[.65rem]">★</span>In depth<span className="h-1 w-1 rounded-full bg-ink/30"/><span className="normal-case tracking-normal text-ink/45">{timeAgo(article.created_at)}</span></div><h1 className="mt-4 font-display text-4xl leading-[1.02] tracking-tight text-ink dark:text-paper sm:text-6xl">{article.headline}</h1></div><div className="mt-9 grid gap-3 sm:grid-cols-2"><StoryImage src={images[0]} label="Featured story" className="aspect-[16/10] sm:row-span-2 sm:aspect-auto"/>{images.slice(1, 3).map((image, index) => <StoryImage key={image} src={image} label={`Feature image ${index + 2}`} className="aspect-[16/8]"/>)}</div><article className="mx-auto mt-10 max-w-3xl font-display text-[1.45rem] leading-[1.72] text-ink/85 dark:text-paper/85 sm:text-[1.7rem]">{paragraphs.map((paragraph, index) => <p key={index} className="mb-7">{paragraph}</p>)}</article><aside className="mx-auto mt-11 max-w-3xl border-l-4 border-coral bg-coral/5 px-6 py-5 dark:bg-coral/10"><p className="text-xs font-bold uppercase tracking-[.16em] text-coral">Sources for this story</p><ul className="mt-3 space-y-2">{sources.map((source, index) => <li key={index} className="text-sm leading-6 text-ink/70">{source.name} — <a className="font-bold text-moss underline underline-offset-4" href={source.link} target="_blank" rel="noreferrer">Read the full story ↗</a></li>)}</ul></aside></main>
 }

@@ -93,7 +93,7 @@ def _simplify_query(text):
     return " ".join(keywords[:5])
 
 
-def search_image(query, orientation="landscape"):
+def search_images(query, orientation="landscape", count=3):
     """Searches Unsplash for a photo matching `query`. Returns the
     image URL (regular size) on success, or None if no key is
     configured, no results found, or the request fails for any reason.
@@ -105,18 +105,22 @@ def search_image(query, orientation="landscape"):
     try:
         response = requests.get(
             UNSPLASH_SEARCH_URL,
-            params={"query": query, "orientation": orientation, "per_page": 1},
+            params={"query": query, "orientation": orientation, "per_page": count},
             headers={"Authorization": f"Client-ID {UNSPLASH_ACCESS_KEY}"},
             timeout=10,
         )
         response.raise_for_status()
         results = response.json().get("results", [])
-        if not results:
-            return None
-        return results[0]["urls"]["regular"]
+        return [result["urls"]["regular"] for result in results if result.get("urls", {}).get("regular")]
     except Exception as e:
         print(f"Unsplash search failed for '{query}': {e}")
-        return None
+        return []
+
+
+def search_image(query, orientation="landscape"):
+    """Backward-compatible single-image helper."""
+    images = search_images(query, orientation, count=1)
+    return images[0] if images else None
 
 
 def search_image_with_fallback(headline):
@@ -148,6 +152,26 @@ def search_image_with_fallback(headline):
     return None
 
 
+def search_images_with_fallback(headline, count=3):
+    """Return a small, varied set of relevant stock photos for a feature."""
+    category = _topic_category_for(headline)
+    queries = [category] if category else []
+    if not _looks_like_named_person_focus(headline):
+        queries.append(headline)
+    simplified = _simplify_query(headline)
+    if simplified:
+        queries.append(simplified)
+
+    images = []
+    for query in dict.fromkeys(filter(None, queries)):
+        for image in search_images(query, count=count):
+            if image not in images:
+                images.append(image)
+            if len(images) >= count:
+                return images
+    return images
+
+
 def ensure_image(article, fallback_query=None):
     """Takes an article dict. If it already has a non-empty 'image'
     field (e.g. from RSS extraction), leaves it untouched. Otherwise
@@ -160,6 +184,23 @@ def ensure_image(article, fallback_query=None):
 
     query = fallback_query or article.get("title", "")
     article["image"] = search_image_with_fallback(query)
+    return article
+
+
+def ensure_images(article, fallback_query=None, count=3):
+    """Ensure a featured article has one primary image plus a small gallery."""
+    images = []
+    for image in [article.get("image"), *(article.get("images") or [])]:
+        if image and image not in images:
+            images.append(image)
+    if len(images) < count:
+        for image in search_images_with_fallback(fallback_query or article.get("title", ""), count=count):
+            if image not in images:
+                images.append(image)
+            if len(images) >= count:
+                break
+    article["images"] = images[:count]
+    article["image"] = article["images"][0] if article["images"] else None
     return article
 
 
