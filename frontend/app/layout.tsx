@@ -3,7 +3,7 @@ import "./globals.css";
 import { SiteShell } from "@/components/site-chrome";
 
 export const metadata: Metadata = {
-  title: { default: "Signal Desk — Global News, Clearly", template: "%s | Signal Desk" },
+  title: { default: "Wireline — Global News, Clearly", template: "%s | Wireline" },
   description: "AI-assisted summaries and multi-source briefings from global reporting.",
 };
 

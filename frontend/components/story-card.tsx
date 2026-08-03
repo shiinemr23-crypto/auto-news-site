@@ -8,7 +8,7 @@ function isFeature(story: Story): story is Feature { return "headline" in story;
 export function StoryImage({ story, priority = false }: { story: Story; priority?: boolean }) {
   const title = isFeature(story) ? story.headline : story.title;
   const image = story.image ?? (isFeature(story) ? story.images?.[0] : null);
-  return image ? <img className="story-image" src={image} alt="" loading={priority ? "eager" : "lazy"} /> : <div className="image-fallback" aria-label={`No image available for ${title}`}><span>Signal<br />Desk</span></div>;
+  return image ? <img className="story-image" src={image} alt="" loading={priority ? "eager" : "lazy"} /> : <div className="image-fallback" aria-label={`No image available for ${title}`}><span>Wire<br />line</span></div>;
 }
 
 export function StoryCard({ story, featured = false }: { story: Story; featured?: boolean }) {
