@@ -18,9 +18,11 @@ genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 model = genai.GenerativeModel("gemini-3.1-flash-lite")
 
 # A cluster needs coverage from at least this many distinct sources
-# to count as "trending" — one or two outlets covering something is
+# to count as "trending" — one outlet covering something on its own is
 # just normal news, not a hot topic worth a long synthesis piece.
-MIN_SOURCES_FOR_TRENDING = 3
+# Set to 2 (not 3) since the source pool is only 5 outlets total —
+# requiring 3 was too strict and rarely triggered in practice.
+MIN_SOURCES_FOR_TRENDING = 2
 
 CLUSTER_PROMPT = """You will be given a numbered list of news headlines
 from different outlets, collected within the same short time window.
