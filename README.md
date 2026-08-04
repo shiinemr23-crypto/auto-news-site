@@ -81,17 +81,3 @@ service cloud.firestore {
   }
 }
 ```
-
-## Long-form featured articles pipeline
-
-`main_features.py` runs a separate, less-frequent pipeline that finds
-genuinely multi-source trending topics and publishes long, cited
-synthesis articles (not simple per-article summaries). Run manually
-with `python main_features.py`, or schedule it separately (every few
-hours, not hourly) via its own GitHub Actions workflow — see
-`main.py` / `run-pipeline.yml` for the pattern to copy.
-
-
-- Articles are deduplicated by link, so re-running the pipeline is safe.
-- Rewrites are intentionally short (2-3 sentences) and always link back
-  to the original source — keep it that way for copyright safety.
