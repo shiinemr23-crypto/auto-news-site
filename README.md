@@ -1,7 +1,7 @@
-# Auto News Site (educational project)
+# Auto News Site 
 
 Scrapes RSS feeds, rewrites articles with Gemini, stores them in Firestore.
-Built as a learning project — not a production news product.
+
 
 ## Setup
 
@@ -95,5 +95,3 @@ hours, not hourly) via its own GitHub Actions workflow — see
 - Articles are deduplicated by link, so re-running the pipeline is safe.
 - Rewrites are intentionally short (2-3 sentences) and always link back
   to the original source — keep it that way for copyright safety.
-- Next steps (not yet built): GitHub Actions scheduling (Phase 4),
-  frontend website (Phase 5), deployment (Phase 6).
